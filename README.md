@@ -1,1 +1,1 @@
-# TOY_spring_boot_security
+# practice_spring_boot_security
