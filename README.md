@@ -1,6 +1,6 @@
 # practice_spring_boot_security
 
-#####WebSecurityConfigurerAdapter의 configure을 오버라이딩 해서 설정을 변경할 수 있다. 
+# WebSecurityConfigurerAdapter의 configure을 오버라이딩 해서 설정을 변경할 수 있다. 
 ~~~ java
 protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests((requests) -> {
@@ -13,19 +13,19 @@ protected void configure(HttpSecurity http) throws Exception {
     }
  ~~~
 #####지금의 경우 anyRequest().qutenticated() 하기 때문에 모든 url에 .formLogin()이 적용되고 있는 상태이다.
-
+application.properties 파일 값 추가
 ~~~
 spring.security.user.name=user
 spring.security.user.password=0000
 ~~~
 이렇게 설정을 하면 매번 새로 생성되는 가계정 대신에 우리가 설정한 id, password가 생긴다.
-####원래라면 
+원래라면 
 ~~~
 Using generated security password: 97f36364-56da-445d-9ba5-bc4144022cac
 ~~~
 이렇게 자동 생성됩니다.
 
-###form login 인 
+#form login 인 
 ~~~ java
 
 @Configuration
@@ -153,3 +153,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 http. logout을 추가 
 기본적으로 로그아웃 성공시 어떤 url로 갈것인지
 세션, 쿠키 정보 삭제를 수행 할 수 있다.
+
+#Remember me
+>세션이 만료되고 웹브라우저가 종료된 후에도 어플리케이션이 사용자를 기억하는 기능
+
+>쿠키에 대한 http요청을 확인 후 토큰 기반 인증을 사용해 유효서을 검사 토큰이 검증되면 사용자는 로그인이 된다.
+
+~~~ java
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    final UserDetailsService userDetailsService;
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()
+                .anyRequest()
+                .authenticated();
+        
+        http
+                .rememberMe()
+                .rememberMeParameter("remember") 
+                .tokenValiditySeconds(3600)// 기본 14일 유효기간
+                .userDetailsService(userDetailsService) // 사용자 인증
+                ;
+    }
+~~~
