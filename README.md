@@ -88,3 +88,68 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 </html>
 ~~~
 ###위의 설정을 바꿈으로써 html이 이렇게 생성된다.
+
+# 로그 아웃 설정
+~~~ java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()
+                .anyRequest()
+                .authenticated();
+        http
+                .formLogin()
+                //.loginPage("/loginPage")
+                .usernameParameter("userId")
+                .passwordParameter("passWord")
+                .loginProcessingUrl("/loginProc")
+                .successHandler(new AuthenticationSuccessHandler() {
+                    @Override
+                    public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+                        /**
+                         * Authentication 안에는 인증 정보가 있다고 합니다.*/
+                        System.out.println("로그인 성공입니다.");
+                        System.out.println("authentication = " + authentication.getName());
+                        httpServletResponse.sendRedirect("/");
+                    }
+                })
+                .failureHandler(new AuthenticationFailureHandler() {
+                    @Override
+                    public void onAuthenticationFailure(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e) throws IOException, ServletException {
+                        System.out.println("예외 내용 = " + e);
+                        httpServletResponse.sendRedirect("/login");
+                    }
+                })
+                .permitAll()
+                ;
+                /**
+                 * 위에서 설정한 해당 설정에 관해서는 모든 사용자가 접근 가능 해야한다 상식적으로 로그인페이지도 인증 받는건 말이 안됨
+                 * */
+        http
+                .logout()
+                .logoutUrl("/logout") //기본적으로 post방식
+                .logoutSuccessUrl("/login")
+                .addLogoutHandler(new LogoutHandler() {
+                    @Override
+                    public void logout(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) {
+                        HttpSession session = httpServletRequest.getSession();
+                        session.invalidate();
+                    } // 세션 해제
+                })
+                .logoutSuccessHandler(new LogoutSuccessHandler() {
+                    @Override
+                    public void onLogoutSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+                        httpServletResponse.sendRedirect("/login");
+                    }
+                })
+                .deleteCookies("remember-me") //쿠키 삭제
+                ;
+    }
+}
+~~~
+http. logout을 추가 
+기본적으로 로그아웃 성공시 어떤 url로 갈것인지
+세션, 쿠키 정보 삭제를 수행 할 수 있다.
