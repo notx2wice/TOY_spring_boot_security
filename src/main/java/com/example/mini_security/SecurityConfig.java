@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -83,5 +84,28 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .tokenValiditySeconds(3600)// 기본 14일
                 .userDetailsService(userDetailsService)
                 ;
+        http
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+                .sessionFixation().changeSessionId()
+                .maximumSessions(1) //세션 의 최대 수
+                .maxSessionsPreventsLogin(true)
+                ;
+        /**
+         *
+         * .sessionCreationPolicy()   default SessionCreationPolicy.If_Required :: 시큐리티가 필요시 생성
+         *                                    SessionCreationPolicy.Always :: 시큐리티가 세션을 항상 생성
+         *                                    SessionCreationPolicy.Never :: 시큐리티가 생성하지 않지만 있으면 사용
+         *                                    SessionCreationPolicy.Stateless :: 시큐리티가 생성하지 않고 있어서 사용 x ex)jwt
+         *
+         * maxSessionsPreventsLogin() default false :: 최대 세션 수를 초과 하였을 떄 오래된 세션 종료
+         *                                    true :: 추가 세션 생성을 막는다.
+         *
+         * .sessionFixation()         default changeSessionId() :: 약용자가 세션id를 받은후 그 세션 아이디를
+         *                                                         피해자의 브라우저에 등록한후 피해자가 로그인을(인증) 을 하게 되면
+         *                                                         악용자 피해자 모두 접속된 상태가 된다.
+         *                                                         이를 막기위해 인증을 성공하게 되면 세션id를 새로 생성하게 된다.
+         */
+
     }
 }

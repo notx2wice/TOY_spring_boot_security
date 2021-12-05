@@ -1,6 +1,6 @@
 # practice_spring_boot_security
 
-# WebSecurityConfigurerAdapter의 configure을 오버라이딩 해서 설정을 변경할 수 있다. 
+#### WebSecurityConfigurerAdapter의 configure을 오버라이딩 해서 설정을 변경할 수 있다. 
 ~~~ java
 protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests((requests) -> {
@@ -13,17 +13,16 @@ protected void configure(HttpSecurity http) throws Exception {
     }
  ~~~
 #####지금의 경우 anyRequest().qutenticated() 하기 때문에 모든 url에 .formLogin()이 적용되고 있는 상태이다.
-application.properties 파일 값 추가
+application.properties 파일에 값 추가 를 하게 되면 슈퍼계정 id, pw가 아래와 같이 생성된다.
 ~~~
 spring.security.user.name=user
 spring.security.user.password=0000
 ~~~
-이렇게 설정을 하면 매번 새로 생성되는 가계정 대신에 우리가 설정한 id, password가 생긴다.
 원래라면 
 ~~~
 Using generated security password: 97f36364-56da-445d-9ba5-bc4144022cac
 ~~~
-이렇게 자동 생성됩니다.
+이런식으로 pw가 자동 생성됩니다.
 
 #form login 인 
 ~~~ java
@@ -178,5 +177,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .tokenValiditySeconds(3600)// 기본 14일 유효기간
                 .userDetailsService(userDetailsService) // 사용자 인증
                 ;
+    }
+~~~
+# Seesion
+
+~~~ java
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    final UserDetailsService userDetailsService;
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .authorizeRequests()
+                .anyRequest()
+                .authenticated();
+        
+        
     }
 ~~~
